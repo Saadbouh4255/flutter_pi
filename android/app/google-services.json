@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "948676543331",
+    "project_id": "flutter-pi-54247",
+    "storage_bucket": "flutter-pi-54247.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948676543331:android:0f22f5126317a163f10956",
+        "android_client_info": {
+          "package_name": "com.example.nouakchott_tourist_guide"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD01aITRho7Cz8ZcrqyoiQDPx9eGncXRBk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
