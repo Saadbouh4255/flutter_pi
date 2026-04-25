@@ -18,6 +18,13 @@ class TouristPlace {
   final String imagePath;
   final String description;
   final PlaceCategory category;
+
+  // Champs supplémentaires (optionnels)
+  final String? wilaya;
+  final String? moughataa;
+  final String? addressUrl;
+  final List<String> photos;
+
   Uint8List? _cachedImageBytes;
 
   TouristPlace({
@@ -26,6 +33,10 @@ class TouristPlace {
     required this.imagePath,
     required this.description,
     required this.category,
+    this.wilaya,
+    this.moughataa,
+    this.addressUrl,
+    this.photos = const [],
   });
 
   factory TouristPlace.fromJson(Map<String, dynamic> json) {
@@ -34,25 +45,38 @@ class TouristPlace {
       name: json['name']?.toString() ?? '',
       imagePath: json['imagePath']?.toString() ?? json['imageUrl']?.toString() ?? '',
       description: json['description']?.toString() ?? '',
+      wilaya: json['wilaya']?.toString(),
+      moughataa: json['moughataa']?.toString(),
+      addressUrl: json['addressUrl']?.toString(),
+      photos: (json['photos'] as List<dynamic>?)
+              ?.map((e) => e.toString())
+              .toList() ??
+          [],
       category: PlaceCategory.values.firstWhere(
         (e) {
           final catString = json['category']?.toString();
           if (catString == null) return false;
-          
+
           final lowerCat = catString.toLowerCase();
           final enumName = e.name.toLowerCase();
-          
+
           if (e.toString() == catString || enumName == lowerCat) {
             return true;
           }
-          
-          if (enumName == 'touristplaces' && (lowerCat.contains('touristique') || lowerCat.contains('tourist'))) return true;
+
+          if (enumName == 'touristplaces' &&
+              (lowerCat.contains('touristique') || lowerCat.contains('tourist'))) return true;
           if (enumName == 'restaurants' && lowerCat.contains('restaurant')) return true;
-          if (enumName == 'hotels' && (lowerCat.contains('hotel') || lowerCat.contains('hôtel'))) return true;
-          if (enumName == 'markets' && (lowerCat.contains('marché') || lowerCat.contains('market') || lowerCat.contains('marche'))) return true;
-          if (enumName == 'activitiesandentertainment' && (lowerCat.contains('activit') || lowerCat.contains('loisir'))) return true;
+          if (enumName == 'hotels' &&
+              (lowerCat.contains('hotel') || lowerCat.contains('hôtel'))) return true;
+          if (enumName == 'markets' &&
+              (lowerCat.contains('marché') ||
+                  lowerCat.contains('market') ||
+                  lowerCat.contains('marche'))) return true;
+          if (enumName == 'activitiesandentertainment' &&
+              (lowerCat.contains('activit') || lowerCat.contains('loisir'))) return true;
           if (enumName == 'services' && lowerCat.contains('service')) return true;
-          
+
           return false;
         },
         orElse: () => PlaceCategory.touristPlaces,
@@ -66,13 +90,29 @@ class TouristPlace {
       'imagePath': imagePath,
       'description': description,
       'category': category.name,
+      if (wilaya != null) 'wilaya': wilaya,
+      if (moughataa != null) 'moughataa': moughataa,
+      if (addressUrl != null) 'addressUrl': addressUrl,
+      if (photos.isNotEmpty) 'photos': photos,
     };
   }
 
   Widget buildImage({double? height, double? width, BoxFit? fit}) {
-    if (imagePath.startsWith('data:image')) {
+    return _buildImageFromPath(imagePath, height: height, width: width, fit: fit);
+  }
+
+  Widget buildPhotoAt(int index, {double? height, double? width, BoxFit? fit}) {
+    if (index < photos.length) {
+      return _buildImageFromPath(photos[index], height: height, width: width, fit: fit);
+    }
+    return _errorContainer(height);
+  }
+
+  Widget _buildImageFromPath(String path,
+      {double? height, double? width, BoxFit? fit}) {
+    if (path.startsWith('data:image')) {
       if (_cachedImageBytes == null) {
-        final base64Str = imagePath.split(',').last;
+        final base64Str = path.split(',').last;
         _cachedImageBytes = base64Decode(base64Str);
       }
       return Image.memory(
@@ -83,18 +123,18 @@ class TouristPlace {
         gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) => _errorContainer(height),
       );
-    } else if (imagePath.startsWith('http')) {
+    } else if (path.startsWith('http')) {
       return Image.network(
-        imagePath,
+        path,
         height: height,
         width: width,
         fit: fit,
         gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) => _errorContainer(height),
       );
-    } else {
+    } else if (path.isNotEmpty) {
       return Image.file(
-        File(imagePath),
+        File(path),
         height: height,
         width: width,
         fit: fit,
@@ -102,6 +142,7 @@ class TouristPlace {
         errorBuilder: (context, error, stackTrace) => _errorContainer(height),
       );
     }
+    return _errorContainer(height);
   }
 
   Widget _errorContainer(double? height) {
