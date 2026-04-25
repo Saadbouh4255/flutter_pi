@@ -48,6 +48,41 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     }
   }
 
+  /// Afficher une image : asset local (lib/...) ou URL réseau (http...)
+  Widget _buildPhoto(String path, {double? height, double? width, BoxFit fit = BoxFit.cover}) {
+    if (path.startsWith('http')) {
+      return Image.network(
+        path,
+        height: height,
+        width: width,
+        fit: fit,
+        loadingBuilder: (ctx, child, progress) {
+          if (progress == null) return child;
+          return Container(
+            color: Colors.grey[300],
+            child: const Center(child: CircularProgressIndicator()),
+          );
+        },
+        errorBuilder: (ctx, e, s) => _photoError(),
+      );
+    } else {
+      return Image.asset(
+        path,
+        height: height,
+        width: width,
+        fit: fit,
+        errorBuilder: (ctx, e, s) => _photoError(),
+      );
+    }
+  }
+
+  Widget _photoError() => Container(
+        color: Colors.grey[200],
+        child: const Center(
+          child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
+        ),
+      );
+
   @override
   Widget build(BuildContext context) {
     final place = widget.place;
@@ -75,26 +110,10 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       onPageChanged: (i) =>
                           setState(() => _currentPhotoIndex = i),
                       itemBuilder: (context, index) {
-                        return Image.network(
+                        return _buildPhoto(
                           photos[index],
-                          fit: BoxFit.cover,
+                          height: double.infinity,
                           width: double.infinity,
-                          loadingBuilder: (ctx, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              color: Colors.grey[300],
-                              child: const Center(
-                                child: CircularProgressIndicator(),
-                              ),
-                            );
-                          },
-                          errorBuilder: (ctx, err, st) => Container(
-                            color: color.withOpacity(0.3),
-                            child: const Center(
-                              child: Icon(Icons.broken_image,
-                                  size: 60, color: Colors.white70),
-                            ),
-                          ),
                         );
                       },
                     )
@@ -379,15 +398,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                         : null,
                                   ),
                                   clipBehavior: Clip.antiAlias,
-                                  child: Image.network(
-                                    photos[i],
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (c, e, s) => Container(
-                                      color: Colors.grey[200],
-                                      child: const Icon(Icons.broken_image,
-                                          color: Colors.grey),
-                                    ),
-                                  ),
+                                  child: _buildPhoto(photos[i]),
                                 ),
                               );
                             },

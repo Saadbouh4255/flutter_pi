@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+
 
 enum PlaceCategory {
   touristPlaces,
@@ -110,7 +110,10 @@ class TouristPlace {
 
   Widget _buildImageFromPath(String path,
       {double? height, double? width, BoxFit? fit}) {
+    if (path.isEmpty) return _errorContainer(height);
+
     if (path.startsWith('data:image')) {
+      // Image encodée en Base64
       if (_cachedImageBytes == null) {
         final base64Str = path.split(',').last;
         _cachedImageBytes = base64Decode(base64Str);
@@ -124,6 +127,7 @@ class TouristPlace {
         errorBuilder: (context, error, stackTrace) => _errorContainer(height),
       );
     } else if (path.startsWith('http')) {
+      // Image distante
       return Image.network(
         path,
         height: height,
@@ -132,17 +136,16 @@ class TouristPlace {
         gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) => _errorContainer(height),
       );
-    } else if (path.isNotEmpty) {
-      return Image.file(
-        File(path),
+    } else {
+      // Asset Flutter local (lib/... ou assets/...)
+      return Image.asset(
+        path,
         height: height,
         width: width,
         fit: fit,
-        gaplessPlayback: true,
         errorBuilder: (context, error, stackTrace) => _errorContainer(height),
       );
     }
-    return _errorContainer(height);
   }
 
   Widget _errorContainer(double? height) {

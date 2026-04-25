@@ -37,7 +37,7 @@ class AppState extends ChangeNotifier {
     TouristPlace(
       id: 'local_rest_002',
       name: 'Restaurant Kemal',
-      imagePath: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format',
+      imagePath: 'lib/data/photos/photo1.jpeg',
       description:
           'Le Restaurant Kemal est un établissement très apprécié de Nouakchott, '
           'situé dans le quartier Tevragh Zeïna. Il propose une cuisine variée mêlant '
@@ -49,12 +49,14 @@ class AppState extends ChangeNotifier {
       moughataa: 'Tevragh Zeïna',
       addressUrl: 'https://maps.app.goo.gl/TkweeEDbKhcLboVv8',
       photos: [
-        'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format',
-        'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&auto=format',
-        'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format',
-        'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&auto=format',
+        'lib/data/photos/photo1.jpeg',
+        'lib/data/photos/photo2.jpeg',
+        'lib/data/photos/photo3.jpeg',
+        'lib/data/photos/photo4.jpeg',
+        'lib/data/photos/photo5.jpeg',
       ],
     ),
+
 
     TouristPlace(
       id: 'local_rest_003',
