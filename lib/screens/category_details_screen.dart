@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import '../models/tourist_place.dart';
 import 'place_detail_screen.dart';
@@ -217,15 +218,21 @@ class _PlaceCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(10),
                             ),
                           ),
-                          onPressed: () {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(place.addressUrl!),
-                                action: SnackBarAction(
-                                    label: 'OK', onPressed: () {}),
-                              ),
-                            );
-                          },
+                          onPressed: () async {
+                          final uri = Uri.parse(place.addressUrl!);
+                          if (await canLaunchUrl(uri)) {
+                            await launchUrl(uri,
+                                mode: LaunchMode.externalApplication);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text(
+                                        'Impossible d\'ouvrir le lien.')),
+                              );
+                            }
+                          }
+                        },
                         ),
                       ],
                     ],

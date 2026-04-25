@@ -36,17 +36,18 @@ class AppState extends ChangeNotifier {
     ),
     TouristPlace(
       id: 'local_rest_002',
-      name: 'Restaurant La Palmeraie',
+      name: 'Restaurant Kemal',
       imagePath: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format',
       description:
-          'La Palmeraie est un restaurant élégant situé au cœur de Nouakchott. '
-          'Il offre une cuisine fusion alliant saveurs mauritaniennes et influences méditerranéennes. '
-          'La terrasse ombragée, entourée de palmiers, crée une atmosphère idéale pour un repas '
-          'en famille ou entre amis. Les grillades et les fruits de mer y sont particulièrement appréciés.',
+          'Le Restaurant Kemal est un établissement très apprécié de Nouakchott, '
+          'situé dans le quartier Tevragh Zeïna. Il propose une cuisine variée mêlant '
+          'spécialités mauritaniennes, plats levantins et grillades savoureuses. '
+          'Son cadre chaleureux, son service attentionné et ses portions généreuses '
+          'en font une adresse incontournable pour les habitants et les visiteurs de la capitale.',
       category: PlaceCategory.restaurants,
-      wilaya: 'Nouakchott-Nord',
-      moughataa: 'Dar Naïm',
-      addressUrl: 'https://maps.google.com/?q=Dar+Naim+Nouakchott+Mauritania',
+      wilaya: 'Nouakchott-Ouest',
+      moughataa: 'Tevragh Zeïna',
+      addressUrl: 'https://maps.app.goo.gl/TkweeEDbKhcLboVv8',
       photos: [
         'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format',
         'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&auto=format',
@@ -54,6 +55,7 @@ class AppState extends ChangeNotifier {
         'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=800&auto=format',
       ],
     ),
+
     TouristPlace(
       id: 'local_rest_003',
       name: 'Restaurant Oasis',

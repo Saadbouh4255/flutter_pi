@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../models/tourist_place.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
@@ -28,6 +29,23 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       if (!list.contains(p)) list.add(p);
     }
     return list;
+  }
+
+  /// Ouvrir un lien (Google Maps ou autre) dans l'application externe
+  Future<void> _openUrl(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Impossible d\'ouvrir le lien.'),
+            backgroundColor: Colors.red[600],
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -200,7 +218,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // Wilaya & Moughataa
+                      // Wilaya & Moughataa chips
                       if (place.wilaya != null || place.moughataa != null)
                         Wrap(
                           spacing: 8,
@@ -282,28 +300,25 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           const SizedBox(height: 16),
                           SizedBox(
                             width: double.infinity,
-                            child: OutlinedButton.icon(
-                              icon: const Icon(Icons.directions),
-                              label: const Text('Voir sur Google Maps'),
-                              style: OutlinedButton.styleFrom(
-                                foregroundColor: color,
-                                side: BorderSide(color: color),
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.directions, size: 20),
+                              label: const Text(
+                                'Ouvrir dans Google Maps',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: color,
+                                foregroundColor: Colors.white,
+                                elevation: 2,
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 12),
+                                    vertical: 14),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                              onPressed: () {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text(
-                                        'Lien Maps : ${place.addressUrl}'),
-                                    action: SnackBarAction(
-                                        label: 'OK', onPressed: () {}),
-                                  ),
-                                );
-                              },
+                              onPressed: () => _openUrl(place.addressUrl!),
                             ),
                           ),
                         ],
@@ -342,19 +357,16 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                         const Duration(milliseconds: 350),
                                     curve: Curves.easeInOut,
                                   );
-                                  setState(
-                                      () => _currentPhotoIndex = i);
+                                  setState(() => _currentPhotoIndex = i);
                                 },
                                 child: AnimatedContainer(
                                   duration:
                                       const Duration(milliseconds: 200),
                                   width: 120,
                                   decoration: BoxDecoration(
-                                    borderRadius:
-                                        BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(10),
                                     border: isActive
-                                        ? Border.all(
-                                            color: color, width: 3)
+                                        ? Border.all(color: color, width: 3)
                                         : null,
                                     boxShadow: isActive
                                         ? [
@@ -372,8 +384,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                                     fit: BoxFit.cover,
                                     errorBuilder: (c, e, s) => Container(
                                       color: Colors.grey[200],
-                                      child: const Icon(
-                                          Icons.broken_image,
+                                      child: const Icon(Icons.broken_image,
                                           color: Colors.grey),
                                     ),
                                   ),
