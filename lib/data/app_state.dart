@@ -16,166 +16,100 @@ class AppState extends ChangeNotifier {
   static final List<TouristPlace> _localRestaurants = [
     TouristPlace(
       id: 'local_rest_001',
-      name: 'Restaurant Tfeila',
-      imagePath: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format',
+      name: 'Nouakchott Night',
+      imagePath: 'lib/data/photos/nkc_night/photo1.jpeg',
       description:
-          'Le Restaurant Tfeila est l\'un des établissements les plus réputés de Nouakchott. '
-          'Spécialisé dans la cuisine mauritanienne traditionnelle, il propose des plats '
-          'authentiques comme le thieboudienne, le méchoui et la chèvre grillée. '
-          'Un endroit incontournable pour découvrir la gastronomie locale dans une ambiance chaleureuse.',
+          'Restaurant réputé pour sa cuisine mauritanienne authentique. '
+          'Idéal pour découvrir la gastronomie locale dans une ambiance chaleureuse.',
       category: PlaceCategory.restaurants,
       wilaya: 'Nouakchott-Ouest',
       moughataa: 'Tevragh Zeïna',
-      addressUrl: 'https://maps.google.com/?q=Tevragh+Zeina+Nouakchott+Mauritania',
+      addressUrl: 'https://maps.app.goo.gl/8EG2H5tyyBQVPvjL8',
       photos: [
-        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format',
-        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format',
-        'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&auto=format',
-        'https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&auto=format',
+        'lib/data/photos/nkc_night/photo2.jpeg',
+        'lib/data/photos/nkc_night/photo1.jpeg',
+        'lib/data/photos/nkc_night/photo3.jpeg',
+        'lib/data/photos/nkc_night/photo4.jpeg',
+        'lib/data/photos/nkc_night/photo5.jpeg',
       ],
     ),
     TouristPlace(
       id: 'local_rest_002',
       name: 'Restaurant Kemal',
-      imagePath: 'lib/data/photos/photo1.jpeg',
+      imagePath: 'lib/data/photos/kemal/photo1.jpeg',
       description:
-          'Le Restaurant Kemal est un établissement très apprécié de Nouakchott, '
-          'situé dans le quartier Tevragh Zeïna. Il propose une cuisine variée mêlant '
-          'spécialités mauritaniennes, plats levantins et grillades savoureuses. '
-          'Son cadre chaleureux, son service attentionné et ses portions généreuses '
-          'en font une adresse incontournable pour les habitants et les visiteurs de la capitale.',
+          'Cuisine variée mêlant spécialités mauritaniennes et levantines. '
+          'Cadre chaleureux et portions généreuses au cœur de Tevragh Zeïna.',
       category: PlaceCategory.restaurants,
       wilaya: 'Nouakchott-Ouest',
       moughataa: 'Tevragh Zeïna',
       addressUrl: 'https://maps.app.goo.gl/TkweeEDbKhcLboVv8',
       photos: [
-        'lib/data/photos/photo1.jpeg',
-        'lib/data/photos/photo2.jpeg',
-        'lib/data/photos/photo3.jpeg',
-        'lib/data/photos/photo4.jpeg',
-        'lib/data/photos/photo5.jpeg',
+        'lib/data/photos/kemal/photo1.jpeg',
+        'lib/data/photos/kemal/photo2.jpeg',
+        'lib/data/photos/kemal/photo3.jpeg',
+        'lib/data/photos/kemal/photo4.jpeg',
+        'lib/data/photos/kemal/photo5.jpeg',
+
       ],
     ),
 
 
     TouristPlace(
       id: 'local_rest_003',
-      name: 'Restaurant Oasis',
-      imagePath: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format',
+      name: "Restaurant l'endroit parfait",
+      imagePath: 'lib/data/photos/endroit/photo1.jpeg',
       description:
-          'Le Restaurant Oasis est un lieu prisé des habitants et des touristes pour sa cuisine '
-          'variée et ses portions généreuses. Spécialités du chef : tagine d\'agneau aux pruneaux, '
-          'couscous royal et poisson du jour grillé. L\'ambiance décontractée et le service '
-          'attentionné en font une adresse incontournable à Nouakchott.',
+          'Lieu prisé pour sa cuisine généreuse, ses spécialités de tagine et son poisson grillé. '
+          'Ambiance décontractée et service attentionné.',
       category: PlaceCategory.restaurants,
       wilaya: 'Nouakchott-Sud',
       moughataa: 'Arafat',
-      addressUrl: 'https://maps.google.com/?q=Arafat+Nouakchott+Mauritania',
+      addressUrl: 'https://maps.app.goo.gl/F3ThCyvRfa4Vvjd59',
       photos: [
-        'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=800&auto=format',
-        'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&auto=format',
-        'https://images.unsplash.com/photo-1476224203421-9ac39bcb3327?w=800&auto=format',
-        'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format',
+        'lib/data/photos/endroit/photo6.jpeg',
+        'lib/data/photos/endroit/photo2.jpeg',
+        'lib/data/photos/endroit/photo3.jpeg',
+        'lib/data/photos/endroit/photo4.jpeg',
+        'lib/data/photos/endroit/photo5.jpeg',
       ],
     ),
     TouristPlace(
       id: 'local_rest_004',
-      name: 'Restaurant Le Sahara',
-      imagePath: 'https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=800&auto=format',
+      name: 'Restaurant Trend',
+      imagePath: 'lib/data/photos/trend/photo1.jpeg',
       description:
-          'Le Sahara est le restaurant de référence pour les amateurs de cuisine traditionnelle '
-          'mauritanienne. Les mets préparés selon des recettes ancestrales, notamment le riz au '
-          'lait de chamelle, le pain maure cuit dans le sable et les dattes farcies aux amandes, '
-          'font la réputation de cet établissement authentique au cœur de la ville.',
+          'Véritable référence de la cuisine mauritanienne traditionnelle. '
+          'Dégustez des plats ancestraux dans un cadre authentique au Ksar.',
       category: PlaceCategory.restaurants,
       wilaya: 'Nouakchott-Ouest',
       moughataa: 'Ksar',
       addressUrl: 'https://maps.google.com/?q=Ksar+Nouakchott+Mauritania',
       photos: [
-        'https://images.unsplash.com/photo-1424847651672-bf20a4b0982b?w=800&auto=format',
-        'https://images.unsplash.com/photo-1528605248644-14dd04022da1?w=800&auto=format',
-        'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=800&auto=format',
-        'https://images.unsplash.com/photo-1506354666786-959d6d497f1a?w=800&auto=format',
+        'lib/data/photos/trend/photo1.jpeg',
+        'lib/data/photos/trend/photo2.jpeg',
+        'lib/data/photos/trend/photo3.jpeg',
+        'lib/data/photos/trend/photo4.jpeg',
+        'lib/data/photos/trend/photo5.jpeg',
       ],
     ),
     TouristPlace(
       id: 'local_rest_005',
-      name: 'Restaurant El Mouna',
-      imagePath: 'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800&auto=format',
+      name: 'Restaurant Mondial pizza',
+      imagePath: 'lib/data/photos/mondial/photo1.jpeg',
       description:
-          'El Mouna est un restaurant de luxe offrant une cuisine internationale de qualité dans '
-          'un cadre raffiné. Son menu propose des spécialités françaises, libanaises et '
-          'mauritaniennes, accompagnées d\'une sélection de jus de fruits frais. Idéal pour '
-          'les dîners d\'affaires et les occasions spéciales dans la capitale mauritanienne.',
+          'Restaurant de luxe proposant une cuisine internationale et locale raffinée. '
+          'Idéal pour des repas d\'affaires ou des occasions spéciales.',
       category: PlaceCategory.restaurants,
       wilaya: 'Nouakchott-Ouest',
       moughataa: 'Tevragh Zeïna',
-      addressUrl: 'https://maps.google.com/?q=El+Mouna+Hotel+Nouakchott',
+      addressUrl: 'https://maps.app.goo.gl/JURVubGNaCnuT1zg8',
       photos: [
-        'https://images.unsplash.com/photo-1466978913421-dad2ebd01d17?w=800&auto=format',
-        'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800&auto=format',
-        'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&auto=format',
-        'https://images.unsplash.com/photo-1551218808-94e220e084d2?w=800&auto=format',
-      ],
-    ),
-    TouristPlace(
-      id: 'local_rest_006',
-      name: 'Restaurant Dar Beida',
-      imagePath: 'https://images.unsplash.com/photo-1544148103-0773bf10d330?w=800&auto=format',
-      description:
-          'Dar Beida est un restaurant marocain-mauritanien situé dans le quartier Tevragh Zeïna. '
-          'Sa terrasse panoramique offre une vue magnifique sur la ville. Les tajines, les pastillas '
-          'et les thés à la menthe sont les spécialités de la maison. Une expérience culinaire '
-          'unique dans un décor oriental enchanteur, à deux pas du centre-ville.',
-      category: PlaceCategory.restaurants,
-      wilaya: 'Nouakchott-Ouest',
-      moughataa: 'Tevragh Zeïna',
-      addressUrl: 'https://maps.google.com/?q=Dar+Beida+Tevragh+Zeina+Nouakchott',
-      photos: [
-        'https://images.unsplash.com/photo-1544148103-0773bf10d330?w=800&auto=format',
-        'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=800&auto=format',
-        'https://images.unsplash.com/photo-1563245372-f21724e3856d?w=800&auto=format',
-        'https://images.unsplash.com/photo-1574484284002-952d92456975?w=800&auto=format',
-      ],
-    ),
-    TouristPlace(
-      id: 'local_rest_007',
-      name: 'Restaurant Chez Cheikh',
-      imagePath: 'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=800&auto=format',
-      description:
-          'Chez Cheikh est une institution à Nouakchott, connue pour ses grillades de viande et '
-          'ses poissons frais du marché. Depuis plus de 20 ans, ce restaurant familial régale ses '
-          'clients avec des recettes transmises de génération en génération. La viande hachée épicée '
-          'et le poisson yassa sont les plats phares de l\'établissement, toujours bondé à l\'heure du déjeuner.',
-      category: PlaceCategory.restaurants,
-      wilaya: 'Nouakchott-Nord',
-      moughataa: 'Teyarett',
-      addressUrl: 'https://maps.google.com/?q=Teyarett+Nouakchott+Mauritania',
-      photos: [
-        'https://images.unsplash.com/photo-1590846406792-0adc7f938f1d?w=800&auto=format',
-        'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&auto=format',
-        'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format',
-        'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format',
-      ],
-    ),
-    TouristPlace(
-      id: 'local_rest_008',
-      name: 'Restaurant Riviera',
-      imagePath: 'https://images.unsplash.com/photo-1428515613728-6b4607e44363?w=800&auto=format',
-      description:
-          'Le Restaurant Riviera est un établissement moderne avec une vue imprenable sur '
-          'l\'Atlantique. Il propose une cuisine de fruits de mer exceptionnelle avec des langoustes, '
-          'crevettes et poissons frais pêchés chaque matin. C\'est l\'endroit idéal pour déguster '
-          'les richesses maritimes de la Mauritanie dans un cadre contemporain et élégant face à l\'océan.',
-      category: PlaceCategory.restaurants,
-      wilaya: 'Nouakchott-Ouest',
-      moughataa: 'Sebkha',
-      addressUrl: 'https://maps.google.com/?q=Plage+Sebkha+Nouakchott+Mauritania',
-      photos: [
-        'https://images.unsplash.com/photo-1428515613728-6b4607e44363?w=800&auto=format',
-        'https://images.unsplash.com/photo-1519984388953-d2406bc725e1?w=800&auto=format',
-        'https://images.unsplash.com/photo-1534482421-64566f976cfa?w=800&auto=format',
-        'https://images.unsplash.com/photo-1510130387422-82bed34b37e9?w=800&auto=format',
+        'lib/data/photos/mondial/photo1.jpeg',
+        'lib/data/photos/mondial/photo2.jpeg',
+        'lib/data/photos/mondial/photo3.jpeg',
+        'lib/data/photos/mondial/photo4.jpeg',
+        'lib/data/photos/mondial/photo5.jpeg',
       ],
     ),
   ];

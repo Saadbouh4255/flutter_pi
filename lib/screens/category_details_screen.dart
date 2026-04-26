@@ -1,60 +1,109 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import '../models/tourist_place.dart';
+import '../theme/app_theme.dart';
 import 'place_detail_screen.dart';
 
 class CategoryDetailsScreen extends StatelessWidget {
   final String categoryName;
   final PlaceCategory categoryType;
+  final Color categoryColor;
 
   const CategoryDetailsScreen({
     super.key,
     required this.categoryName,
     required this.categoryType,
+    required this.categoryColor,
   });
 
   @override
   Widget build(BuildContext context) {
     final appState = AppStateProvider.of(context);
-    final color = categoryType.color;
+    final isDark = ThemeProvider.of(context).isDark;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(categoryName,
-            style: const TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: color,
-        foregroundColor: Colors.white,
-      ),
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       body: AnimatedBuilder(
         animation: appState,
-        builder: (context, child) {
+        builder: (context, _) {
           final places = appState.getPlacesByCategory(categoryType);
 
-          if (places.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.inbox, size: 64, color: Colors.grey[400]),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Aucun lieu trouvé dans cette catégorie.',
-                    style: TextStyle(fontSize: 18, color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
+          return CustomScrollView(
+            slivers: [
+              // ── Premium SliverAppBar ─────────────────────────────────────
+              SliverAppBar(
+                expandedHeight: 160,
+                pinned: true,
+                backgroundColor:
+                    isDark ? AppColors.darkSurface : Colors.white,
+                foregroundColor:
+                    isDark ? AppColors.darkText : AppColors.lightText,
+                elevation: 0,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Container(
+                    decoration: BoxDecoration(
+                      gradient: AppGradients.categoryGradient(categoryColor),
+                    ),
+                    child: SafeArea(
+                      child: Padding(
+                        padding:
+                            const EdgeInsets.fromLTRB(20, 50, 20, 20),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            Text(
+                              categoryName,
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.w800,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${places.length} lieu${places.length != 1 ? 'x' : ''} trouvé${places.length != 1 ? 's' : ''}',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white70,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
-                ],
+                ),
               ),
-            );
-          }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 12),
-            itemCount: places.length,
-            itemBuilder: (context, index) {
-              final place = places[index];
-              return _PlaceCard(place: place, color: color);
-            },
+              // ── Empty state ─────────────────────────────────────────────
+              if (places.isEmpty)
+                SliverFillRemaining(
+                  child: _EmptyState(
+                      color: categoryColor, isDark: isDark),
+                )
+              else
+                // ── Place list ─────────────────────────────────────────────
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 14),
+                        child: _PlaceCard(
+                          place: places[index],
+                          color: categoryColor,
+                          isDark: isDark,
+                          index: index,
+                        ),
+                      ),
+                      childCount: places.length,
+                    ),
+                  ),
+                ),
+            ],
           );
         },
       ),
@@ -62,184 +111,337 @@ class CategoryDetailsScreen extends StatelessWidget {
   }
 }
 
-// ── Carte de lieu ────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// PLACE CARD
+// ─────────────────────────────────────────────────────────────────────────────
 
-class _PlaceCard extends StatelessWidget {
+class _PlaceCard extends StatefulWidget {
   final TouristPlace place;
   final Color color;
+  final bool isDark;
+  final int index;
 
-  const _PlaceCard({required this.place, required this.color});
+  const _PlaceCard({
+    required this.place,
+    required this.color,
+    required this.isDark,
+    required this.index,
+  });
+
+  @override
+  State<_PlaceCard> createState() => _PlaceCardState();
+}
+
+class _PlaceCardState extends State<_PlaceCard>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 130),
+      lowerBound: 0.97,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+    _scale = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final hasLocation = place.wilaya != null || place.moughataa != null;
+    final place = widget.place;
+    final color = widget.color;
+    final isDark = widget.isDark;
     final hasPhotos = place.photos.isNotEmpty;
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      elevation: 4,
-      shadowColor: color.withOpacity(0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      clipBehavior: Clip.antiAlias,
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (_) => PlaceDetailScreen(place: place),
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.reverse(),
+      onTapUp: (_) {
+        _ctrl.forward();
+        _navigate(context);
+      },
+      onTapCancel: () => _ctrl.forward(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkCard : Colors.white,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
-          );
-        },
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // ── Image principale ──────────────────────────────────
-            Stack(
-              children: [
-                place.buildImage(
-                    height: 200, width: double.infinity, fit: BoxFit.cover),
-                // Badge nombre de photos
-                if (hasPhotos)
-                  Positioned(
-                    top: 10,
-                    right: 10,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.photo_library,
-                              color: Colors.white, size: 13),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${place.photos.length + 1} photos',
-                            style: const TextStyle(
-                                color: Colors.white, fontSize: 11),
+            boxShadow: AppShadows.card(color),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // ── Image ──────────────────────────────────────────────────
+              ClipRRect(
+                borderRadius:
+                    const BorderRadius.vertical(top: Radius.circular(22)),
+                child: Stack(
+                  children: [
+                    place.buildImage(
+                        height: 190,
+                        width: double.infinity,
+                        fit: BoxFit.cover),
+                    // Gradient bottom overlay
+                    Positioned(
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      height: 60,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              Colors.black.withOpacity(0.55),
+                              Colors.transparent,
+                            ],
                           ),
+                        ),
+                      ),
+                    ),
+                    // Photo count badge
+                    if (hasPhotos)
+                      Positioned(
+                        top: 10,
+                        right: 10,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            color: Colors.black54,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.photo_library_rounded,
+                                  color: Colors.white, size: 12),
+                              const SizedBox(width: 4),
+                              Text(
+                                '${place.photos.length + 1}',
+                                style: GoogleFonts.poppins(
+                                  color: Colors.white,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    // Category badge
+                    Positioned(
+                      bottom: 10,
+                      left: 12,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          gradient: AppGradients.categoryGradient(color),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          place.category.displayName
+                              .replaceAll(RegExp(r'[^\w\s]'), '')
+                              .trim(),
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Content ────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    if (place.name.isNotEmpty)
+                      Text(
+                        place.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                          color: isDark
+                              ? AppColors.darkText
+                              : AppColors.lightText,
+                        ),
+                      ),
+
+                    // Location chips
+                    if (place.wilaya != null || place.moughataa != null) ...[
+                      const SizedBox(height: 8),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 4,
+                        children: [
+                          if (place.wilaya != null)
+                            _LocationChip(
+                              icon: Icons.map_rounded,
+                              label: place.wilaya!,
+                              color: AppColors.catTourist,
+                            ),
+                          if (place.moughataa != null)
+                            _LocationChip(
+                              icon: Icons.location_city_rounded,
+                              label: place.moughataa!,
+                              color: AppColors.catHotel,
+                            ),
                         ],
                       ),
-                    ),
-                  ),
-              ],
-            ),
+                    ],
 
-            // ── Contenu texte ─────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Nom
-                  if (place.name.isNotEmpty)
+                    const SizedBox(height: 10),
+
                     Text(
-                      place.name,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
+                      place.description,
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        height: 1.5,
+                        color: isDark
+                            ? AppColors.darkSubText
+                            : AppColors.lightSubText,
                       ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
 
-                  // Localisation (wilaya + moughataa)
-                  if (hasLocation) ...[
-                    const SizedBox(height: 6),
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 4,
+                    const SizedBox(height: 14),
+
+                    // ── Action row ──────────────────────────────────────────
+                    Row(
                       children: [
-                        if (place.wilaya != null)
-                          _MiniChip(
-                            icon: Icons.map_outlined,
-                            label: place.wilaya!,
-                            color: Colors.blue,
+                        Expanded(
+                          child: _GradientButton(
+                            label: 'Voir les détails',
+                            icon: Icons.arrow_forward_rounded,
+                            gradient: AppGradients.categoryGradient(color),
+                            onTap: () => _navigate(context),
                           ),
-                        if (place.moughataa != null)
-                          _MiniChip(
-                            icon: Icons.location_city_outlined,
-                            label: place.moughataa!,
-                            color: Colors.indigo,
-                          ),
+                        ),
+                        if (place.addressUrl != null) ...[
+                          const SizedBox(width: 10),
+                          _MapsButton(
+                              url: place.addressUrl!, color: color),
+                        ],
                       ],
                     ),
                   ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-                  const SizedBox(height: 8),
+  void _navigate(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PlaceDetailScreen(place: widget.place),
+      ),
+    );
+  }
+}
 
-                  // Description (tronquée)
-                  Text(
-                    place.description,
-                    style: const TextStyle(fontSize: 14, height: 1.5),
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                  ),
+// ─────────────────────────────────────────────────────────────────────────────
+// SMALL WIDGETS
+// ─────────────────────────────────────────────────────────────────────────────
 
-                  const SizedBox(height: 12),
+class _LocationChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
 
-                  // Bouton "Voir plus" + lien Maps
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          icon: const Icon(Icons.info_outline, size: 16),
-                          label: const Text('Voir les détails'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: color,
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(vertical: 10),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) =>
-                                    PlaceDetailScreen(place: place),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      if (place.addressUrl != null) ...[
-                        const SizedBox(width: 8),
-                        IconButton(
-                          icon: const Icon(Icons.directions),
-                          color: color,
-                          tooltip: 'Voir sur Maps',
-                          style: IconButton.styleFrom(
-                            backgroundColor: color.withOpacity(0.1),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
-                          onPressed: () async {
-                          final uri = Uri.parse(place.addressUrl!);
-                          if (await canLaunchUrl(uri)) {
-                            await launchUrl(uri,
-                                mode: LaunchMode.externalApplication);
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        'Impossible d\'ouvrir le lien.')),
-                              );
-                            }
-                          }
-                        },
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
+  const _LocationChip(
+      {required this.icon, required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.10),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withOpacity(0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: color),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GradientButton extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final LinearGradient gradient;
+  final VoidCallback onTap;
+
+  const _GradientButton({
+    required this.label,
+    required this.icon,
+    required this.gradient,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
               ),
             ),
+            const SizedBox(width: 4),
+            Icon(icon, color: Colors.white, size: 15),
           ],
         ),
       ),
@@ -247,34 +449,73 @@ class _PlaceCard extends StatelessWidget {
   }
 }
 
-// ── Petit chip d'info ────────────────────────────────────────────
-
-class _MiniChip extends StatelessWidget {
-  final IconData icon;
-  final String label;
+class _MapsButton extends StatelessWidget {
+  final String url;
   final Color color;
-  const _MiniChip(
-      {required this.icon, required this.label, required this.color});
+
+  const _MapsButton({required this.url, required this.color});
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.25)),
+    return GestureDetector(
+      onTap: () async {
+        final uri = Uri.parse(url);
+        if (await canLaunchUrl(uri)) {
+          await launchUrl(uri, mode: LaunchMode.externalApplication);
+        }
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.12),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Icon(Icons.directions_rounded, color: color, size: 20),
       ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+    );
+  }
+}
+
+class _EmptyState extends StatelessWidget {
+  final Color color;
+  final bool isDark;
+  const _EmptyState({required this.color, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 12, color: color),
-          const SizedBox(width: 4),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 11,
-                  color: color,
-                  fontWeight: FontWeight.w500)),
+          Container(
+            width: 80,
+            height: 80,
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(Icons.inbox_rounded, size: 40, color: color),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Aucun lieu trouvé',
+            style: GoogleFonts.poppins(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: isDark ? AppColors.darkText : AppColors.lightText,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Revenez plus tard, de nouveaux lieux seront ajoutés.',
+            style: GoogleFonts.poppins(
+              fontSize: 13,
+              color: isDark ? AppColors.darkSubText : AppColors.lightSubText,
+            ),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
     );

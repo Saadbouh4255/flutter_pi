@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import '../theme/app_theme.dart';
 
 
 enum PlaceCategory {
@@ -178,17 +179,17 @@ extension PlaceCategoryExtension on PlaceCategory {
   Color get color {
     switch (this) {
       case PlaceCategory.touristPlaces:
-        return Colors.blue;
+        return AppColors.catTourist;
       case PlaceCategory.restaurants:
-        return Colors.orange;
+        return AppColors.catRestaurant;
       case PlaceCategory.hotels:
-        return Colors.purple;
+        return AppColors.catHotel;
       case PlaceCategory.markets:
-        return Colors.green;
+        return AppColors.catMarket;
       case PlaceCategory.activitiesAndEntertainment:
-        return Colors.red;
+        return AppColors.catActivity;
       case PlaceCategory.services:
-        return Colors.teal;
+        return AppColors.catService;
     }
   }
 }

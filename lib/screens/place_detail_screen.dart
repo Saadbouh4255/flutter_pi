@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../main.dart';
 import '../models/tourist_place.dart';
+import '../theme/app_theme.dart';
 
 class PlaceDetailScreen extends StatefulWidget {
   final TouristPlace place;
@@ -21,7 +24,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     super.dispose();
   }
 
-  // Liste combinée : image principale + photos supplémentaires
   List<String> get _allPhotos {
     final list = <String>[];
     if (widget.place.imagePath.isNotEmpty) list.add(widget.place.imagePath);
@@ -31,7 +33,6 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     return list;
   }
 
-  /// Ouvrir un lien (Google Maps ou autre) dans l'application externe
   Future<void> _openUrl(String url) async {
     final uri = Uri.parse(url);
     if (await canLaunchUrl(uri)) {
@@ -40,46 +41,50 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Impossible d\'ouvrir le lien.'),
-            backgroundColor: Colors.red[600],
+            content: Text('Impossible d\'ouvrir le lien.',
+                style: GoogleFonts.poppins()),
+            backgroundColor: AppColors.catActivity,
           ),
         );
       }
     }
   }
 
-  /// Afficher une image : asset local (lib/...) ou URL réseau (http...)
-  Widget _buildPhoto(String path, {double? height, double? width, BoxFit fit = BoxFit.cover}) {
+  Widget _buildPhoto(String path,
+      {double? height, double? width, BoxFit fit = BoxFit.cover}) {
     if (path.startsWith('http')) {
       return Image.network(
         path,
         height: height,
         width: width,
-        fit: fit,
+        fit: BoxFit.contain,
         loadingBuilder: (ctx, child, progress) {
           if (progress == null) return child;
           return Container(
-            color: Colors.grey[300],
-            child: const Center(child: CircularProgressIndicator()),
+            color: Colors.grey[900],
+            child: const Center(
+              child: CircularProgressIndicator(color: AppColors.gold),
+            ),
           );
         },
-        errorBuilder: (ctx, e, s) => _photoError(),
+        errorBuilder: (ctx, e, s) => _photoError(height),
       );
     } else {
       return Image.asset(
         path,
         height: height,
         width: width,
-        fit: fit,
-        errorBuilder: (ctx, e, s) => _photoError(),
+        fit: BoxFit.contain,
+        errorBuilder: (ctx, e, s) => _photoError(height),
       );
     }
   }
 
-  Widget _photoError() => Container(
-        color: Colors.grey[200],
+  Widget _photoError([double? height]) => Container(
+        height: height ?? 200,
+        color: const Color(0xFF1C2230),
         child: const Center(
-          child: Icon(Icons.broken_image, size: 40, color: Colors.grey),
+          child: Icon(Icons.broken_image_rounded, size: 48, color: Colors.white30),
         ),
       );
 
@@ -88,17 +93,19 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
     final place = widget.place;
     final photos = _allPhotos;
     final color = place.category.color;
+    final isDark = ThemeProvider.of(context).isDark;
 
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: isDark ? AppColors.darkBg : AppColors.lightBg,
       body: CustomScrollView(
         slivers: [
-          // ── AppBar avec carousel de photos ──────────────────────
+          // ── Hero Carousel AppBar ─────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 340,
             pinned: true,
-            backgroundColor: color,
+            backgroundColor: isDark ? AppColors.darkSurface : color,
             foregroundColor: Colors.white,
+            elevation: 0,
             flexibleSpace: FlexibleSpaceBar(
               background: Stack(
                 children: [
@@ -109,42 +116,67 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                       itemCount: photos.length,
                       onPageChanged: (i) =>
                           setState(() => _currentPhotoIndex = i),
-                      itemBuilder: (context, index) {
-                        return _buildPhoto(
-                          photos[index],
-                          height: double.infinity,
-                          width: double.infinity,
-                        );
-                      },
+                      itemBuilder: (context, index) => _buildPhoto(
+                        photos[index],
+                        height: double.infinity,
+                        width: double.infinity,
+                      ),
                     )
                   else
                     Container(
-                      color: color.withOpacity(0.3),
+                      decoration: BoxDecoration(
+                        gradient: AppGradients.categoryGradient(color),
+                      ),
                       child: Center(
-                        child: Icon(Icons.restaurant,
-                            size: 80, color: Colors.white70),
+                        child: Icon(Icons.photo_rounded,
+                            size: 80, color: Colors.white24),
                       ),
                     ),
-                  // Dégradé bas
+
+                  // Bottom gradient overlay
                   Positioned.fill(
                     child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.transparent,
-                            Colors.black.withOpacity(0.5),
-                          ],
-                          stops: const [0.55, 1.0],
-                        ),
+                      decoration: const BoxDecoration(
+                        gradient: AppGradients.heroOverlay,
                       ),
                     ),
                   ),
-                  // Indicateurs de page
+
+                  // Photo counter badge
                   if (photos.length > 1)
                     Positioned(
-                      bottom: 12,
+                      top: 12,
+                      right: 16,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.photo_library_rounded,
+                                color: Colors.white, size: 13),
+                            const SizedBox(width: 5),
+                            Text(
+                              '${_currentPhotoIndex + 1} / ${photos.length}',
+                              style: GoogleFonts.poppins(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                  // Dot indicators
+                  if (photos.length > 1)
+                    Positioned(
+                      bottom: 14,
                       left: 0,
                       right: 0,
                       child: Row(
@@ -153,43 +185,17 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           photos.length,
                           (i) => AnimatedContainer(
                             duration: const Duration(milliseconds: 250),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            width: _currentPhotoIndex == i ? 20 : 8,
-                            height: 8,
+                            margin:
+                                const EdgeInsets.symmetric(horizontal: 3),
+                            width: _currentPhotoIndex == i ? 22 : 7,
+                            height: 7,
                             decoration: BoxDecoration(
                               color: _currentPhotoIndex == i
-                                  ? Colors.white
-                                  : Colors.white54,
+                                  ? AppColors.gold
+                                  : Colors.white38,
                               borderRadius: BorderRadius.circular(4),
                             ),
                           ),
-                        ),
-                      ),
-                    ),
-                  // Badge nombre de photos
-                  if (photos.length > 1)
-                    Positioned(
-                      top: 12,
-                      right: 16,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.photo_library,
-                                color: Colors.white, size: 14),
-                            const SizedBox(width: 4),
-                            Text(
-                              '${_currentPhotoIndex + 1}/${photos.length}',
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 12),
-                            ),
-                          ],
                         ),
                       ),
                     ),
@@ -198,46 +204,49 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
             ),
           ),
 
-          // ── Contenu principal ────────────────────────────────────
+          // ── Body Content ─────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Carte titre + badges
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+                // ── Title Section ──────────────────────────────────────────
+                _Section(
+                  isDark: isDark,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Catégorie badge
+                      // Category badge
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 10, vertical: 4),
+                            horizontal: 12, vertical: 5),
                         decoration: BoxDecoration(
-                          color: color.withOpacity(0.12),
-                          borderRadius: BorderRadius.circular(20),
+                          gradient: AppGradients.categoryGradient(color),
+                          borderRadius: BorderRadius.circular(12),
                         ),
                         child: Text(
                           place.category.displayName,
-                          style: TextStyle(
-                              color: color,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      // Nom
-                      Text(
-                        place.name,
-                        style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          height: 1.2,
+                          style: GoogleFonts.poppins(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w700,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 12),
-                      // Wilaya & Moughataa chips
+                      // Place name
+                      Text(
+                        place.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 26,
+                          fontWeight: FontWeight.w800,
+                          color: isDark
+                              ? AppColors.darkText
+                              : AppColors.lightText,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      // Location chips
                       if (place.wilaya != null || place.moughataa != null)
                         Wrap(
                           spacing: 8,
@@ -245,15 +254,15 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                           children: [
                             if (place.wilaya != null)
                               _InfoChip(
-                                icon: Icons.map_outlined,
+                                icon: Icons.map_rounded,
                                 label: place.wilaya!,
-                                color: Colors.blue,
+                                color: AppColors.catTourist,
                               ),
                             if (place.moughataa != null)
                               _InfoChip(
-                                icon: Icons.location_city_outlined,
+                                icon: Icons.location_city_rounded,
                                 label: place.moughataa!,
-                                color: Colors.indigo,
+                                color: AppColors.catHotel,
                               ),
                           ],
                         ),
@@ -261,106 +270,97 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-                // ── Description ──────────────────────────────────────
-                Container(
-                  color: Colors.white,
-                  padding: const EdgeInsets.all(20),
+                // ── Description ────────────────────────────────────────────
+                _Section(
+                  isDark: isDark,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _SectionTitle(title: '📝 Description', color: color),
-                      const SizedBox(height: 10),
+                      _SectionTitle(
+                          title: 'Description',
+                          icon: Icons.description_rounded,
+                          color: color,
+                          isDark: isDark),
+                      const SizedBox(height: 12),
                       Text(
                         place.description,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          height: 1.7,
-                          color: Colors.black87,
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          height: 1.8,
+                          color: isDark
+                              ? AppColors.darkSubText
+                              : AppColors.lightSubText,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-                // ── Localisation ──────────────────────────────────────
+                // ── Location & Maps ────────────────────────────────────────
                 if (place.wilaya != null ||
                     place.moughataa != null ||
                     place.addressUrl != null)
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(20),
+                  _Section(
+                    isDark: isDark,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _SectionTitle(
-                            title: '📍 Localisation', color: color),
-                        const SizedBox(height: 12),
+                            title: 'Localisation',
+                            icon: Icons.location_on_rounded,
+                            color: color,
+                            isDark: isDark),
+                        const SizedBox(height: 14),
                         if (place.wilaya != null)
                           _LocationRow(
-                            icon: Icons.map,
+                            icon: Icons.map_rounded,
                             label: 'Wilaya',
                             value: place.wilaya!,
-                            iconColor: Colors.blue,
+                            color: AppColors.catTourist,
+                            isDark: isDark,
                           ),
                         if (place.moughataa != null) ...[
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 10),
                           _LocationRow(
-                            icon: Icons.location_city,
+                            icon: Icons.location_city_rounded,
                             label: 'Moughataa',
                             value: place.moughataa!,
-                            iconColor: Colors.indigo,
+                            color: AppColors.catHotel,
+                            isDark: isDark,
                           ),
                         ],
                         if (place.addressUrl != null) ...[
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton.icon(
-                              icon: const Icon(Icons.directions, size: 20),
-                              label: const Text(
-                                'Ouvrir dans Google Maps',
-                                style: TextStyle(
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w600),
-                              ),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: color,
-                                foregroundColor: Colors.white,
-                                elevation: 2,
-                                padding: const EdgeInsets.symmetric(
-                                    vertical: 14),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              onPressed: () => _openUrl(place.addressUrl!),
-                            ),
+                          const SizedBox(height: 18),
+                          _MapsButton(
+                            onTap: () => _openUrl(place.addressUrl!),
+                            color: color,
                           ),
                         ],
                       ],
                     ),
                   ),
 
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
 
-                // ── Galerie photos ────────────────────────────────────
+                // ── Photo Gallery ──────────────────────────────────────────
                 if (photos.length > 1)
-                  Container(
-                    color: Colors.white,
-                    padding: const EdgeInsets.all(20),
+                  _Section(
+                    isDark: isDark,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         _SectionTitle(
-                            title: '🖼️ Photos (${photos.length})',
-                            color: color),
-                        const SizedBox(height: 12),
+                            title: 'Photos (${photos.length})',
+                            icon: Icons.photo_library_rounded,
+                            color: color,
+                            isDark: isDark),
+                        const SizedBox(height: 14),
                         SizedBox(
-                          height: 120,
+                          height: 110,
                           child: ListView.separated(
                             scrollDirection: Axis.horizontal,
                             itemCount: photos.length,
@@ -370,35 +370,32 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                               final isActive = i == _currentPhotoIndex;
                               return GestureDetector(
                                 onTap: () {
-                                  _pageController.animateToPage(
-                                    i,
-                                    duration:
-                                        const Duration(milliseconds: 350),
-                                    curve: Curves.easeInOut,
-                                  );
+                                  _pageController.animateToPage(i,
+                                      duration:
+                                          const Duration(milliseconds: 350),
+                                      curve: Curves.easeInOut);
                                   setState(() => _currentPhotoIndex = i);
                                 },
                                 child: AnimatedContainer(
                                   duration:
                                       const Duration(milliseconds: 200),
-                                  width: 120,
+                                  width: 110,
                                   decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
+                                    borderRadius: BorderRadius.circular(14),
                                     border: isActive
-                                        ? Border.all(color: color, width: 3)
-                                        : null,
+                                        ? Border.all(
+                                            color: AppColors.gold, width: 2.5)
+                                        : Border.all(
+                                            color: isDark
+                                                ? AppColors.darkBorder
+                                                : AppColors.lightBorder),
                                     boxShadow: isActive
-                                        ? [
-                                            BoxShadow(
-                                              color:
-                                                  color.withOpacity(0.4),
-                                              blurRadius: 8,
-                                            )
-                                          ]
+                                        ? AppShadows.glow(AppColors.gold)
                                         : null,
                                   ),
                                   clipBehavior: Clip.antiAlias,
-                                  child: _buildPhoto(photos[i]),
+                                  child: _buildPhoto(photos[i],
+                                      fit: BoxFit.cover),
                                 ),
                               );
                             },
@@ -408,7 +405,7 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
                     ),
                   ),
 
-                const SizedBox(height: 24),
+                const SizedBox(height: 32),
               ],
             ),
           ),
@@ -418,32 +415,71 @@ class _PlaceDetailScreenState extends State<PlaceDetailScreen> {
   }
 }
 
-// ── Widgets utilitaires ──────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION WRAPPER
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _Section extends StatelessWidget {
+  final Widget child;
+  final bool isDark;
+
+  const _Section({required this.child, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkCard : Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+        ),
+        boxShadow: AppShadows.soft,
+      ),
+      child: child,
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SECTION TITLE
+// ─────────────────────────────────────────────────────────────────────────────
 
 class _SectionTitle extends StatelessWidget {
   final String title;
+  final IconData icon;
   final Color color;
-  const _SectionTitle({required this.title, required this.color});
+  final bool isDark;
+
+  const _SectionTitle({
+    required this.title,
+    required this.icon,
+    required this.color,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         Container(
-          width: 4,
-          height: 20,
+          width: 32,
+          height: 32,
           decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(2),
+            color: color.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
           ),
+          child: Icon(icon, color: color, size: 16),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 10),
         Text(
           title,
-          style: TextStyle(
-            fontSize: 17,
-            fontWeight: FontWeight.bold,
-            color: Colors.grey[800],
+          style: GoogleFonts.poppins(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+            color: isDark ? AppColors.darkText : AppColors.lightText,
           ),
         ),
       ],
@@ -451,79 +487,185 @@ class _SectionTitle extends StatelessWidget {
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// INFO CHIP
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _InfoChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color color;
-  const _InfoChip(
-      {required this.icon, required this.label, required this.color});
+
+  const _InfoChip({required this.icon, required this.label, required this.color});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+        color: color.withOpacity(0.10),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.3)),
+        border: Border.all(color: color.withOpacity(0.28)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
+          Icon(icon, size: 13, color: color),
           const SizedBox(width: 5),
-          Text(label,
-              style: TextStyle(
-                  fontSize: 13,
-                  color: color,
-                  fontWeight: FontWeight.w500)),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 12,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LOCATION ROW
+// ─────────────────────────────────────────────────────────────────────────────
+
 class _LocationRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
-  final Color iconColor;
-  const _LocationRow(
-      {required this.icon,
-      required this.label,
-      required this.value,
-      required this.iconColor});
+  final Color color;
+  final bool isDark;
+
+  const _LocationRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(8),
+            color: color.withOpacity(0.10),
+            borderRadius: BorderRadius.circular(12),
           ),
-          child: Icon(icon, size: 18, color: iconColor),
+          child: Icon(icon, size: 18, color: color),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 14),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(label,
-                style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey[500],
-                    fontWeight: FontWeight.w500)),
-            const SizedBox(height: 2),
-            Text(value,
-                style: const TextStyle(
-                    fontSize: 15, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: GoogleFonts.poppins(
+                fontSize: 11,
+                color: isDark ? AppColors.darkSubText : AppColors.lightSubText,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            Text(
+              value,
+              style: GoogleFonts.poppins(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppColors.darkText : AppColors.lightText,
+              ),
+            ),
           ],
         ),
       ],
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// MAPS BUTTON
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _MapsButton extends StatefulWidget {
+  final VoidCallback onTap;
+  final Color color;
+
+  const _MapsButton({required this.onTap, required this.color});
+
+  @override
+  State<_MapsButton> createState() => _MapsButtonState();
+}
+
+class _MapsButtonState extends State<_MapsButton>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _ctrl;
+  late final Animation<double> _scale;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 120),
+      lowerBound: 0.96,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+    _scale = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) => _ctrl.reverse(),
+      onTapUp: (_) {
+        _ctrl.forward();
+        widget.onTap();
+      },
+      onTapCancel: () => _ctrl.forward(),
+      child: ScaleTransition(
+        scale: _scale,
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(vertical: 15),
+          decoration: BoxDecoration(
+            gradient: AppGradients.categoryGradient(widget.color),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withOpacity(0.4),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.directions_rounded,
+                  color: Colors.white, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                'Ouvrir dans Google Maps',
+                style: GoogleFonts.poppins(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 15,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
